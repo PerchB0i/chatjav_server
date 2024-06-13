@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.Socket;
 
-public class ClientThread extends Thread{
+public class ClientThread extends Thread {
     Socket client;
     Server server;
     PrintWriter writer;
@@ -15,6 +15,7 @@ public class ClientThread extends Thread{
         this.client = client;
         this.server = server;
     }
+
     public void run() {
         try {
             InputStream input = client.getInputStream();
@@ -23,18 +24,20 @@ public class ClientThread extends Thread{
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(input)
             );
-            this.writer = new PrintWriter(output, true);
+            writer = new PrintWriter(output,true);
 
             String rawMessage;
+           // "{"type": "", "content": ""}"
 
             while((rawMessage = reader.readLine()) != null) {
                 Message message = new ObjectMapper()
                         .readValue(rawMessage, Message.class);
 
                 switch (message.type) {
-                    case Broadcast -> server.broadcastSend(message);
+                    case Broadcast -> server.broadcast(message);
                 }
             }
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -42,7 +45,8 @@ public class ClientThread extends Thread{
     }
 
     public void send(Message message) throws JsonProcessingException {
-        String rawMessage = new ObjectMapper().writeValueAsString(message);
+        String rawMessage = new ObjectMapper()
+                .writeValueAsString(message);
         writer.println(rawMessage);
     }
 }
